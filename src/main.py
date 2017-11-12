@@ -38,13 +38,15 @@ def main(opts):
 	K = f2K(focal_length)
 
 	for img in imgs: 
-
-		#sift feature matching 
-
+		#sift feature matching (taking pre-computed points for now for testing purposes)
+		feats = matFileToFeatures('./matlab_cache/sift-keypoints/point'+str(i+1)+'.mat', imgs[0].shape, imgs[1].shape)
+		
 		#fundamental matrix estimation 
+		F = estimateFundamentalMatrixRANSAC()
 
 		#essential matrix estimation 
-
+		E = estimateEssentialMatrix(K, F, False)
+		
 		#camera projection matrix 
 
 		#triangulation 
