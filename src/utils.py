@@ -92,5 +92,26 @@ def matFileToFeatures(filename, shape1, shape2):
 
     return out 
 
-def estimateEssentialMatrix(K, F): 
-    pass 
+def estimateEssentialMatrix(K, F, rank_constraint=True): 
+    """Given a fundamental matrix F and camera intrinsic matrix K, computes the essential matrix E 
+    by (optionally) applying rank_constaint
+    
+    Args: 
+    K (3,3): Camera intrinstic Matrix
+    F (3,3): Fundamental Matrix
+    rank_constraint (True/False): If true, applies rank constraint after initial estimate, otherwise not
+    
+    Returns: 
+    E (3,3): Essential Matrix"""
+    E = K.T.dot(F.dot(K))
+
+    if rank_constraint==False: 
+        return E
+
+    u,s,v = np.linalg.svd(E, full_matrices=True)
+    s[0] = s[1] = 1 
+    s[-1] = 0 
+    E = u.dot(np.diag(s).dot(v.T))
+
+    #to do: apply correct norm here 
+    return E 
