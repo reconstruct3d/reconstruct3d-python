@@ -13,6 +13,29 @@ def f2K(f):
     K[0,0]=K[1,1]=f 
     return K
 
+def estimateFundamentalMatrixRANSAC(feats, n=1): 
+    """Apply RANSAC algorithm to estimate fundamental matrix
+    
+    Args: 
+    feats (4, K): ndarray containing K SIFT-features 
+    n (int): How many times to randomly sample 8 points
+
+    Returns: 
+    F (3,3): Estimated fundamental matrix
+    """
+    
+    for i in xrange(n): 
+        #Randomly sampling 8 points
+        idx = np.random.choice(feats.shape[1], (8,), replace=False)
+        
+        #Estimating fundamental matrix using randomly sampled points
+        x1 = feats[:2,idx].T
+        x2 = feats[2:, idx].T
+        F = estimateFundamentalMatrix(x1, x2)
+
+        #TO DO: Write evaluation criteria here
+    return F
+
 def estimateFundamentalMatrix(x1,x2):
     """Given a pair, it computes the associated fundamental matrix
     using 8-point algorithm
@@ -33,11 +56,11 @@ def estimateFundamentalMatrix(x1,x2):
         A[i,:] = np.reshape(rowA, (9,))
     
     #Initial estimate of F
-    u,s,v = np.linalg.svd(A, full_matrices=False)
+    u,s,v = np.linalg.svd(A, full_matrices=True)
     F = v[:,-1].reshape((3,3))
 
     #Applying rank filtering
-    u2,s2,v2 = np.linalg.svd(F, full_matrices=False)
+    u2,s2,v2 = np.linalg.svd(F, full_matrices=True)
     s2[-1] = 0 
     F = np.dot(u2, np.dot(np.diag(s2), v2.T))
 
