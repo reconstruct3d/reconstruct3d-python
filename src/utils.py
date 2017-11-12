@@ -1,19 +1,19 @@
-import numpy as np 
+import numpy as np
+from scipy.io import loadmat
 
 def f2K(f):
     """Returns a camera intrinsic matrix, given focal length
-
-    Args: 
+    Args:
     f: focal length of a camera
 
     Returns
     K: Camera intrinsic matrix"""
 
-    K = np.eye(3)
-    K[0,0] = K[1,1] = f 
+    K=np.eye(3)
+    K[0,0]=K[1,1]=f 
     return K
 
-def estimateFundamentalMatrix(x1, x2):
+def estimateFundamentalMatrix(x1,x2):
     """Given a pair, it computes the associated fundamental matrix
     using 8-point algorithm
 
@@ -43,3 +43,31 @@ def estimateFundamentalMatrix(x1, x2):
 
     #to do: apply correct norm here
     return F 
+
+def matFileToFeatures(filename, shape1, shape2): 
+    """Reads .mat file from sfmedu and converts it into estimateFundamentalMatrix() compatible format
+    (Used only for testing purposes)
+    
+    Args: 
+    filename: path to .mat file
+    shape1, shape2: dimensions of images (used for eliminating normalization effect)
+    
+    Returns: 
+    out: ndarray (4,n) where n are total number of SIFT features"""
+
+    #Extraction from .mat dictionary to ndarray
+    matfile = loadmat(filename)
+    pair = matfile['pair']
+    out = pair[0,0][1]
+
+    #Eliminating normalization
+    out[0,:] = shape1[1]/2-out[0,:]
+    out[1,:] = shape1[0]/2-out[1,:]
+
+    out[2,:] = shape2[1]/2-out[2,:]
+    out[3,:] = shape2[0]/2-out[3,:]
+
+    return out 
+
+def estimateEssentialMatrix(K, F): 
+    pass 
