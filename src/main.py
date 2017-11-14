@@ -37,21 +37,33 @@ def main(opts):
 	#constructing camera intrinsic matrix
 	K = f2K(focal_length)
 
-	for img in imgs: 
+	essential_matrices = list()
+	for index, img in enumerate(imgs[:len(imgs) - 1]):
 		#sift feature matching (taking pre-computed points for now for testing purposes)
-		feats = matFileToFeatures('./matlab_cache/sift-keypoints/point'+str(i+1)+'.mat', imgs[0].shape, imgs[1].shape)
+		feats = matFileToFeatures('./matlab_cache/sift-keypoints/point'+str(index+1)+'.mat', imgs[0].shape, imgs[1].shape)
 		
-		#fundamental matrix estimation 
-		F = estimateFundamentalMatrixRANSAC()
+		# #fundamental matrix estimation 
+		# F = estimateFundamentalMatrixRANSAC()
 
+		# Loading the fundamental matrix
+		F = loadmat('./matlab_cache/fundamental-matrix/F_matrix' + str(index + 1))['f_matrix']
+		
 		#essential matrix estimation 
 		E = estimateEssentialMatrix(K, F, False)
-		
+		essential_matrices.append(E)		
 		#camera projection matrix 
 
 		#triangulation 
 
 		#bundle adjustment
+		
+	# Testing the essential matrices
+	# loading orginal matrices
+	
+	# test_essential_matrices(, E)
+	pass
+
+def test_essential_matrices(E_original, E):
 	pass
 
 def set_arguments(parser):
