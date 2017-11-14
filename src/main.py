@@ -5,6 +5,7 @@ import os
 import skimage as skimg
 from utils import * 
 import argparse
+from numpy.testing import assert_allclose
 
 def main(opts):
 	"""Performs the whole algorithm i.e given video frames, 
@@ -57,14 +58,17 @@ def main(opts):
 
 		#bundle adjustment
 		
-	# Testing the essential matrices
-	# loading orginal matrices
-	
-	# test_essential_matrices(, E)
+	# Testing the essential matrices (comparing with orginal matrices)
+	essential_matrices_original = list()
+	for i in range(len(imgs) - 1):
+		E = loadmat('./matlab_cache/essential-matrix/E_matrix' + str(i + 1))['e_matrix']
+		essential_matrices_original.append(E)
+
+	test_essential_matrices(np.array(essential_matrices_original), np.array(essential_matrices))
 	pass
 
 def test_essential_matrices(E_original, E):
-	pass
+	assert_allclose(E_original, E)
 
 def set_arguments(parser):
     parser.add_argument('-dataDir',action='store', type=str, default='../data/', dest='dataDir')
