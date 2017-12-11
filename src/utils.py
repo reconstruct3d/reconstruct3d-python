@@ -115,3 +115,23 @@ def estimateEssentialMatrix(K, F, rank_constraint=True):
 
     #to do: apply correct norm here 
     return E 
+
+def get2DPointCorrespondencesFromOF(flowMat): 
+    """Given a flow matrix of the images, returns the calculated corresponding 2d feature matches 
+    
+    Args: 
+    flowMat (height, width, 2): ndarray containing the flow map of image
+    
+    Returns: 
+    before (height x width, 2): ndarray representing the pixels' position in first image
+    after (height x width, 2): ndarray representing the pixels' position in second image
+    """
+    #Generating all indices..
+    idxx, idxy = np.meshgrid(np.arange(flowMat.shape[0]), np.arange(flowMat.shape[1]))
+    idxx, idxy = idxx.T.flatten(), idxy.T.flatten()
+
+    #Adding translation vectors to get displacements..
+    before = np.concatenate((idxx[:,np.newaxis], idxy[:,np.newaxis]),axis=-1)
+    after = before+flowMat.reshape((-1,2))
+
+    return before, after

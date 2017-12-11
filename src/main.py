@@ -52,6 +52,10 @@ def main(opts):
 											iterations=opts.iterations, poly_n=opts.polyN,
 											poly_sigma=opts.polySigma,flags=opts.flags)
 		
+		#Calculating 2D point correspondences.. 
+		feat_img1, feat_img2 = get2DPointCorrespondencesFromOF(flow)
+
+		return 
 		# #fundamental matrix estimation 
 		# F = estimateFundamentalMatrixRANSAC()
 
