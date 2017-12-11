@@ -3,6 +3,7 @@ import numpy as np
 import skimage.io as io 
 import os 
 import skimage as skimg
+import cv2 
 from utils import * 
 import argparse
 from numpy.testing import assert_allclose
@@ -39,9 +40,17 @@ def main(opts):
 	K = f2K(focal_length)
 
 	essential_matrices = list()
-	for index, img in enumerate(imgs[:len(imgs) - 1]):
-		#sift feature matching (taking pre-computed points for now for testing purposes)
-		feats = matFileToFeatures('./matlab_cache/sift-keypoints/point'+str(index+1)+'.mat', imgs[0].shape, imgs[1].shape)
+	for idx in xrange(len(imgs)-1):
+
+		#Getting subsequent images, converting it into grayscale and computing flow-map
+		img1, img2 = imgs[idx], imgs[idx+1]
+		img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+		img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+
+		flow = cv2.calcOpticalFlowFarneback(img1_gray, img2_gray, None, pyr_scale=opts.pyrScale,
+		 									levels=opts.levels, winsize=opts.winSize,
+											iterations=opts.iterations, poly_n=opts.polyN,
+											poly_sigma=opts.polySigma,flags=opts.flags)
 		
 		# #fundamental matrix estimation 
 		# F = estimateFundamentalMatrixRANSAC()
@@ -71,9 +80,16 @@ def test_essential_matrices(E_original, E):
 	assert_allclose(E_original, E)
 
 def set_arguments(parser):
-    parser.add_argument('-dataDir',action='store', type=str, default='../data/', dest='dataDir')
-    parser.add_argument('-ext', action='store',type=list, default=['png', 'jpg'], dest='ext')
-    parser.add_argument('-maxSize',action='store', type=int, default=1024, dest='maxSize')
+	parser.add_argument('-dataDir',action='store', type=str, default='../data/', dest='dataDir')
+	parser.add_argument('-ext', action='store',type=list, default=['png', 'jpg'], dest='ext')
+	parser.add_argument('-maxSize',action='store', type=int, default=1024, dest='maxSize')
+	parser.add_argument('-pyrScale',action='store',type=float, default=.5, dest='pyrScale')
+	parser.add_argument('-levels',action='store',type=int, default=3, dest='levels')
+	parser.add_argument('-winSize',action='store',type=int, default=15, dest='winSize')
+	parser.add_argument('-iterations',action='store',type=int, default=3, dest='iterations')
+	parser.add_argument('-polyN',action='store',type=float, default=5, dest='polyN')
+	parser.add_argument('-polySigma',action='store',type=float, default=1.2, dest='polySigma')
+	parser.add_argument('-flags',action='store',type=int, default=0, dest='flags')
 
 if __name__=='__main__': 
 	#setting parser for command-line arguments 
