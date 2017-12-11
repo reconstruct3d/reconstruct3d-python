@@ -55,21 +55,19 @@ def main(opts):
 		#Calculating 2D point correspondences.. 
 		feat_img1, feat_img2 = get2DPointCorrespondencesFromOF(flow)
 
-		return 
-		# #fundamental matrix estimation 
-		# F = estimateFundamentalMatrixRANSAC()
+		#2. Fundamental Matrix Estimation (through RANSAC)
+		F, inliers = cv2.findFundamentalMat(feat_img1,feat_img2, method=cv2.RANSAC, param1=opts.outlierThres,
+											param2=opts.confidence)
 
-		# Loading the fundamental matrix
-		F = loadmat('./matlab_cache/fundamental-matrix/F_matrix' + str(index + 1))['f_matrix']
 		
-		#essential matrix estimation 
+		#3. Essential matrix estimation 
 		E = estimateEssentialMatrix(K, F, False)
-		essential_matrices.append(E)		
-		#camera projection matrix 
+		
+		#4. camera projection matrix 
 
-		#triangulation 
+		#5. triangulation 
 
-		#bundle adjustment
+		#6. bundle adjustment
 		
 	# Testing the essential matrices (comparing with orginal matrices)
 	essential_matrices_original = list()
@@ -84,9 +82,12 @@ def test_essential_matrices(E_original, E):
 	assert_allclose(E_original, E)
 
 def set_arguments(parser):
+    #DATA ARGUMENTS 
 	parser.add_argument('-dataDir',action='store', type=str, default='../data/', dest='dataDir')
 	parser.add_argument('-ext', action='store',type=list, default=['png', 'jpg'], dest='ext')
 	parser.add_argument('-maxSize',action='store', type=int, default=1024, dest='maxSize')
+
+	#OPTICAL FLOW ARGUMENTS
 	parser.add_argument('-pyrScale',action='store',type=float, default=.5, dest='pyrScale')
 	parser.add_argument('-levels',action='store',type=int, default=3, dest='levels')
 	parser.add_argument('-winSize',action='store',type=int, default=15, dest='winSize')
@@ -94,6 +95,10 @@ def set_arguments(parser):
 	parser.add_argument('-polyN',action='store',type=float, default=5, dest='polyN')
 	parser.add_argument('-polySigma',action='store',type=float, default=1.2, dest='polySigma')
 	parser.add_argument('-flags',action='store',type=int, default=0, dest='flags')
+
+	#FUNDAMENTAL MATRIX/RANSAC ARGUMENTS 
+	parser.add_argument('-outlierThres',action='store',type=float, default=.5, dest='outlierThres')
+	parser.add_argument('-confidence',action='store',type=float, default=.99, dest='confidence')
 
 if __name__=='__main__': 
 	#setting parser for command-line arguments 
