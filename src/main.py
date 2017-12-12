@@ -20,7 +20,8 @@ def main(opts):
 	"""
 
 	#loading images
-	pathnames = [os.path.join(opts.dataDir, x) for x in sorted(os.listdir(opts.dataDir)) if x.split('.')[-1] in opts.ext]
+	pathnames = [os.path.join(opts.dataDir, x) for x in sorted(os.listdir(opts.dataDir)) 
+	if x.split('.')[-1] in opts.ext]
 	imgs = io.ImageCollection(pathnames)
 	num_imgs = len(imgs)
 
@@ -58,15 +59,22 @@ def main(opts):
 		#2. Fundamental Matrix Estimation (through RANSAC)
 		F, inliers = cv2.findFundamentalMat(feat_img1,feat_img2, method=cv2.RANSAC, param1=opts.outlierThres,
 											param2=opts.confidence)
-
+		inliers = inliers[:,0].astype(bool)
 		
-		#3. Essential matrix estimation 
+		#3. Essential matrix Estimation
 		E = estimateEssentialMatrix(K, F, False)
 		
-		#4. camera projection matrix 
+		#4. Camera projection matrix Estimation
+		P1 = np.eye(N=3,M=4)
+		_, R, t, mask=cv2.recoverPose(E, feat_img1[inliers].astype(np.float32), feat_img2[inliers].astype(np.float32), K)
+		P2 = np.hstack((R,t))
 
-		#5. triangulation 
+		#5. Triangulation 
+		points4D = cv2.triangulatePoints(P1, P2, feat_img1[inliers[:,0]].T.astype(np.float32), feat_img2[inliers[:,0]].T)
 
+		#Displaying (uncolored) 3D point cloud
+		
+		return 
 		#6. bundle adjustment
 		
 	# Testing the essential matrices (comparing with orginal matrices)
@@ -83,7 +91,7 @@ def test_essential_matrices(E_original, E):
 
 def set_arguments(parser):
     #DATA ARGUMENTS 
-	parser.add_argument('-dataDir',action='store', type=str, default='../data/', dest='dataDir')
+	parser.add_argument('-dataDir',action='store', type=str, default='../data/fountain/', dest='dataDir')
 	parser.add_argument('-ext', action='store',type=list, default=['png', 'jpg'], dest='ext')
 	parser.add_argument('-maxSize',action='store', type=int, default=1024, dest='maxSize')
 
